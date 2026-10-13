@@ -1,0 +1,15 @@
+# Everything is a text file with LF endings unless proved otherwise.
+# The global config here has core.autocrlf=true, so without this a shell script checked
+# out on Windows becomes CRLF and `sh verify.sh` dies on Linux CI with a bogus shebang.
+* text=auto eol=lf
+
+*.sh    text eol=lf
+*.mjs   text eol=lf
+*.c     text eol=lf
+*.h     text eol=lf
+*.md    text eol=lf
+*.json  text eol=lf
+*.yml   text eol=lf
+
+# Fixture artifacts are never committed, but be explicit about the trap.
+skills/*/fixtures/build/** binary

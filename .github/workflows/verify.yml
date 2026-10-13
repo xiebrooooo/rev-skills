@@ -1,0 +1,65 @@
+name: verify
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: verify every skill
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # readelf, objdump, nm, strings, strip
+      - name: Install binutils
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends binutils file gcc
+
+      - name: Validate skill definitions
+        run: node build.mjs --check
+
+      - name: Run each skill's own verifier
+        run: |
+          failed=0
+          found=0
+          for dir in skills/*/; do
+            [ -f "$dir/verify.sh" ] || continue
+            found=$((found + 1))
+            echo "::group::$dir"
+            if ! (cd "$dir" && sh verify.sh); then
+              echo "::error file=$dir::verification failed"
+              failed=1
+            fi
+            echo "::endgroup::"
+          done
+
+          if [ "$found" -eq 0 ]; then
+            echo "::error::no skills with a verify.sh were found"
+            exit 1
+          fi
+          echo "verified $found skill(s)"
+          exit $failed
+
+      - name: Build platform outputs
+        run: node build.mjs
+
+      - name: Upload generated formats
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7

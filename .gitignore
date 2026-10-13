@@ -1,0 +1,23 @@
+# Fixture build artifacts — sources only, never binaries
+skills/*/fixtures/build/
+skills/*/fixtures/out/
+
+# Generated platform output
+dist/
+
+# Benchmark scratch
+bench/.work/
+bench/results.tmp.md
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+
+# Local scratch
+.tmp/
